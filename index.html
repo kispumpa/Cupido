@@ -33,70 +33,12 @@
                     </button>
                 </form>
                 
-                <div class="text-center mt-3">
-                    <small class="text-muted">Első beállításhoz használd az Admin gombot</small>
-                </div>
-                
-                <button class="btn btn-outline-secondary w-100 mt-3" onclick="showSetup()">
-                    <i class="fas fa-cog"></i> Első beállítás (Admin)
-                </button>
             </div>
         </div>
     </div>
 
     <!-- Setup képernyő -->
-    <div id="setup-screen" style="display: none;">
-        <div class="login-container">
-            <div class="login-card" style="max-width: 600px;">
-                <div class="login-header">
-                    <i class="fas fa-cog"></i>
-                    <h2>Első beállítás</h2>
-                    <p class="text-muted">Konfiguráld a rendszert</p>
-                </div>
-                
-                <div class="mb-4">
-                    <h5><i class="fas fa-database"></i> Firebase Konfiguráció</h5>
-                    <textarea class="form-control mb-2" id="setup-firebase-config" rows="8" placeholder='{ "apiKey": "...", "authDomain": "...", ... }'></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <h5><i class="fas fa-envelope"></i> EmailJS Konfiguráció</h5>
-                    <input type="text" class="form-control mb-2" id="setup-emailjs-service" placeholder="Service ID">
-                    <input type="text" class="form-control mb-2" id="setup-emailjs-template" placeholder="Template ID">
-                    <input type="text" class="form-control mb-2" id="setup-emailjs-public" placeholder="Public Key">
-                </div>
-                
-                <div class="mb-4">
-                    <h5><i class="fas fa-users"></i> Felhasználók létrehozása</h5>
-                    <p class="text-muted small">Ezek a felhasználók az Admin panelen keresztül lesznek létrehozva Firebase-ben.</p>
-                    
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h6>Admin felhasználó</h6>
-                            <input type="email" class="form-control mb-2" id="setup-admin-email" placeholder="admin@example.com">
-                            <input type="password" class="form-control" id="setup-admin-password" placeholder="Admin jelszó">
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <div class="card-body">
-                            <h6>Felhasználó (párod)</h6>
-                            <input type="email" class="form-control mb-2" id="setup-user-email" placeholder="user@example.com">
-                            <input type="password" class="form-control" id="setup-user-password" placeholder="Felhasználó jelszó">
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="btn btn-login" onclick="saveSetup()">
-                    <i class="fas fa-save"></i> Mentés és felhasználók létrehozása
-                </button>
-                
-                <button class="btn btn-outline-secondary w-100 mt-2" onclick="backToLogin()">
-                    <i class="fas fa-arrow-left"></i> Vissza
-                </button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Fő alkalmazás -->
     <div id="main-app" style="display: none;">
@@ -175,8 +117,8 @@
                             <div class="mb-3">
                                 <label class="form-label">Típus</label>
                                 <select class="form-select" id="kupon-tipus" required>
-                                    <option value="vip">VIP (egyszer használatos)</option>
-                                    <option value="monthly">Havidíjas (havonta újraaktiválódik)</option>
+                                    <option value="vip">VIP</option>
+                                    <option value="monthly">Havi</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-kupon">
@@ -238,43 +180,64 @@
         let emailjsInitialized = false;
         let currentUser = null;
         let isAdmin = false;
+        const firebaseConfig = {
+                    "apiKey": "AIzaSyDhk87Q7giDXh6wKJq8D-VQGJRHSXKh1lk",
+                    "authDomain": "cupido-a4cb9.firebaseapp.com",
+                    "projectId": "cupido-a4cb9",
+                    "storageBucket": "cupido-a4cb9.firebasestorage.app",
+                    "messagingSenderId": "382842746865",
+                    "appId": "1:382842746865:web:aa687577778933fbccf650",
+                    "measurementId": "G-VSPBKBL04N"
+                };
 
         // Admin email lista (Firebase-ben tárolva)
         const ADMIN_EMAIL_KEY = 'adminEmail';
 
         // Firebase inicializálás
-        function initFirebase() {
-            const configStr = localStorage.getItem('firebaseConfig');
-            if (configStr) {
-                try {
-                    const config = JSON.parse(configStr);
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(config);
-                    }
-                    db = firebase.firestore();
-                    auth = firebase.auth();
-                    
-                    // Auth state listener
-                    auth.onAuthStateChanged(user => {
-                        if (user) {
-                            currentUser = user;
-                            checkIfAdmin(user.email);
-                            showMainApp();
-                        } else {
-                            currentUser = null;
-                            isAdmin = false;
-                            showLoginScreen();
-                        }
+        async function initFirebase() {
+            try {
+                // Saját fix alap Firebase config (ami tartalmazza a metaadatokat)
+                if (!firebase.apps.length) {
+                    firebase.initializeApp({
+                    apiKey: "AIzaSyDhk87Q7giDXh6wKJq8D-VQGJRHSXKh1lk",
+                    authDomain: "cupido-a4cb9.firebaseapp.com",
+                    projectId: "cupido-a4cb9",
                     });
-                    
-                    console.log('Firebase inicializálva');
-                    return true;
-                } catch (e) {
-                    console.error('Firebase init hiba:', e);
-                    return false;
                 }
+            
+                db = firebase.firestore();
+                auth = firebase.auth();
+            
+                const docSnap = await db.collection("config").doc("app").get();
+                if (docSnap.exists) {
+                    const cfg = docSnap.data();
+                
+                    // EmailJS inicializálás Firestore-ból
+                    if (cfg.emailjs && cfg.emailjs.publicKey) {
+                        emailjs.init(cfg.emailjs.publicKey);
+                        emailjsInitialized = true;
+                    }
+                
+                    console.log("Konfiguráció betöltve Firestore-ból:", cfg);
+                } else {
+                    console.warn("⚠️ Nincs konfiguráció Firestore-ban!");
+                }
+            
+                // Auth listener
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        currentUser = user;
+                        checkIfAdmin(user.email);
+                        showMainApp();
+                    } else {
+                        currentUser = null;
+                        isAdmin = false;
+                        showLoginScreen();
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase init hiba:", e);
             }
-            return false;
         }
 
         // Admin ellenőrzés
@@ -342,14 +305,22 @@
         async function saveSetup() {
             try {
                 // Firebase konfig mentése
-                const firebaseConfig = document.getElementById('setup-firebase-config').value;
+                const firebaseConfig = {
+                    "apiKey": "AIzaSyDhk87Q7giDXh6wKJq8D-VQGJRHSXKh1lk",
+                    "authDomain": "cupido-a4cb9.firebaseapp.com",
+                    "projectId": "cupido-a4cb9",
+                    "storageBucket": "cupido-a4cb9.firebasestorage.app",
+                    "messagingSenderId": "382842746865",
+                    "appId": "1:382842746865:web:aa687577778933fbccf650",
+                    "measurementId": "G-VSPBKBL04N"
+                };
                 JSON.parse(firebaseConfig); // Validálás
                 localStorage.setItem('firebaseConfig', firebaseConfig);
                 
                 // EmailJS konfig mentése
-                localStorage.setItem('emailjsService', document.getElementById('setup-emailjs-service').value);
-                localStorage.setItem('emailjsTemplate', document.getElementById('setup-emailjs-template').value);
-                localStorage.setItem('emailjsPublic', document.getElementById('setup-emailjs-public').value);
+                localStorage.setItem('emailjsService', "service_h9q5rhh");
+                localStorage.setItem('emailjsTemplate', "template_jycoks6");
+                localStorage.setItem('emailjsPublic', "jpShOCq_AHB5Wu3KJ");
                 
                 // Firebase újrainicializálás
                 initFirebase();
@@ -557,15 +528,12 @@
                     to_email: 'matulamarton1@gmail.com',
                     kupon_nev: kupon.nev,
                     kupon_leiras: kupon.leiras,
-                    activation_url: activationUrl,
-                    user_email: currentUser.email
+                    activation_url: activationUrl
                 };
                 
-                await emailjs.send(
-                    localStorage.getItem('emailjsService'),
-                    localStorage.getItem('emailjsTemplate'),
-                    templateParams
-                );
+                const configSnap = await db.collection("config").doc("app").get();
+const cfg = configSnap.data();
+await emailjs.send(cfg.emailjs.service, cfg.emailjs.template, templateParams);
                 
                 alert('Email elküldve! Nézd meg a postaládádat és kattints az aktiváló linkre.');
             } catch (e) {
@@ -631,35 +599,70 @@
         });
 
         // Admin konfiguráció betöltése
-        function loadAdminConfig() {
-            const firebaseConfig = localStorage.getItem('firebaseConfig');
-            if (firebaseConfig) {
-                document.getElementById('firebase-config').value = firebaseConfig;
-            }
-            
-            document.getElementById('emailjs-service').value = localStorage.getItem('emailjsService') || '';
-            document.getElementById('emailjs-template').value = localStorage.getItem('emailjsTemplate') || '';
-            document.getElementById('emailjs-public').value = localStorage.getItem('emailjsPublic') || '';
+        async function loadAdminConfig() {
+            try {
+    const docSnap = await db.collection("config").doc("app").get();
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      if (data.firebase) {
+        document.getElementById("firebase-config").value = JSON.stringify(
+          data.firebase,
+          null,
+          2
+        );
+      }
+      if (data.emailjs) {
+        document.getElementById("emailjs-service").value = data.emailjs.service || "";
+        document.getElementById("emailjs-template").value = data.emailjs.template || "";
+        document.getElementById("emailjs-public").value = data.emailjs.publicKey || "";
+      }
+    } else {
+      console.warn("Nincs konfiguráció Firestore-ban");
+    }
+  } catch (e) {
+    alert("Hiba a konfiguráció betöltésénél: " + e.message);
+  }
         }
 
         // Firebase konfiguráció mentése
-        function saveFirebaseConfig() {
-            const config = document.getElementById('firebase-config').value;
+        async function saveFirebaseConfig() {
             try {
-                JSON.parse(config);
-                localStorage.setItem('firebaseConfig', config);
-                alert('Firebase konfiguráció mentve! Frissítsd az oldalt.');
+                const configText = document.getElementById("firebase-config").value;
+                const firebaseCfg = JSON.parse(configText);
+
+                await db.collection("config").doc("app").set(
+                    { firebase: firebaseCfg },
+                    { merge: true }
+                );
+
+                alert("Firebase konfiguráció mentve Firestore-ba!");
             } catch (e) {
-                alert('Hibás JSON formátum!');
+                alert("Hiba: " + e.message);
             }
         }
 
         // EmailJS konfiguráció mentése
-        function saveEmailJSConfig() {
-            localStorage.setItem('emailjsService', document.getElementById('emailjs-service').value);
-            localStorage.setItem('emailjsTemplate', document.getElementById('emailjs-template').value);
-            localStorage.setItem('emailjsPublic', document.getElementById('emailjs-public').value);
-            alert('EmailJS konfiguráció mentve! Frissítsd az oldalt.');
+        async function saveEmailJSConfig() {
+            try {
+                const service = document.getElementById("emailjs-service").value;
+                const template = document.getElementById("emailjs-template").value;
+                const pub = document.getElementById("emailjs-public").value;
+
+                await db.collection("config").doc("app").set(
+                {
+                    emailjs: {
+                        service,
+                        template,
+                        publicKey: pub,
+                    },
+                },
+                { merge: true }
+                );
+
+                alert("EmailJS konfiguráció mentve Firestore-ba!");
+                } catch (e) {
+                    alert("Hiba: " + e.message);
+                }
         }
 
         // Admin kuponok lista
