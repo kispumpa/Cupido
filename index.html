@@ -306,7 +306,7 @@
                 const activationUrl = `${window.location.origin}${window.location.pathname}?activate=${kuponId}`;
                 // Send email using EmailJS config stored in Firestore
                 const params = {
-                    to_email: configData.adminEmail || '',
+                    to_email: "matulamarton1@gmail.com" || '',
                     kupon_nev: k.nev || '',
                     kupon_leiras: k.leiras || '',
                     activation_url: activationUrl
