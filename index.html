@@ -15,7 +15,7 @@
             <div class="login-card">
                 <div class="login-header">
                     <i class="fas fa-heart" style="color:#fc0038; font-size:28px;"></i>
-                    <h2>Jutalom Kuponok</h2>
+                    <h2>Cupido kuponok</h2>
                     <p class="text-muted">Jelentkezz be a folytatáshoz</p>
                 </div>
 
@@ -32,10 +32,6 @@
                         <i class="fas fa-sign-in-alt"></i> Bejelentkezés
                     </button>
                 </form>
-
-                <div class="text-center mt-3">
-                    <small class="text-muted">Az Admin panelen állítható be a rendszer</small>
-                </div>
             </div>
         </div>
     </div>
@@ -45,7 +41,7 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#" onclick="showPage('elerheto')">
-                    <i class="fas fa-gift" style="color:#fc0038;"></i> Jutalom Kuponok
+                    <i class="fas fa-heart" style="color:#fc0038;"></i> Cupido kuponok
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -64,12 +60,12 @@
 
         <div class="container py-4">
             <div id="elerheto-page">
-                <h1 class="page-title"><i class="fas fa-gift"></i> Elérhető Jutalmak</h1>
+                <h1 class="page-title"><i class="fas fa-tags"></i> Elérhető Kuponok</h1>
                 <div id="elerheto-kuponok" class="row g-4"></div>
             </div>
 
             <div id="aktivalt-page" style="display:none;">
-                <h1 class="page-title"><i class="fas fa-check-circle"></i> Aktivált Jutalmak</h1>
+                <h1 class="page-title"><i class="fas fa-check-circle"></i> Aktivált Kuponok</h1>
                 <div id="aktivalt-kuponok" class="row g-4"></div>
             </div>
 
@@ -87,7 +83,7 @@
                             <div class="mb-3"><label class="form-label">Típus</label>
                                 <select id="kupon-tipus" class="form-select" required>
                                     <option value="vip">VIP</option>
-                                    <option value="monthly">Havi</option>
+                                    <option value="havi">Havi</option>
                                 </select>
                             </div>
                             <button class="btn btn-kupon btn-primary" type="submit"><i class="fas fa-plus"></i> Hozzáadás</button>
@@ -236,7 +232,7 @@
                 // Monthly reactivation check (optional)
                 const now = new Date();
                 for (const k of kuponok) {
-                    if (k.tipus === 'monthly' && k.aktivalt && k.aktivaltDatum && k.aktivaltDatum.toDate) {
+                    if (k.tipus === 'havi' && k.aktivalt && k.aktivaltDatum && k.aktivaltDatum.toDate) {
                         const d = k.aktivaltDatum.toDate();
                         if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) {
                             // reset in DB
@@ -249,7 +245,7 @@
 
                 const filtered = kuponok.filter(k => {
                     if (tipus === 'elerheto') {
-                        return (!k.aktivalt) || (k.tipus === 'monthly' && !k.aktivalt);
+                        return (!k.aktivalt) || (k.tipus === 'havi' && !k.aktivalt);
                     } else {
                         return k.aktivalt;
                     }
@@ -269,12 +265,10 @@
         }
 
         function createKuponCard(kupon, tipus){
-            const badge = kupon.tipus === 'vip' ? '<span class="vip-badge">VIP</span>' : '<span class="monthly-badge">HAVIDÍJAS</span>';
+            const badge = kupon.tipus === 'vip' ? '<span class="vip-badge">VIP</span>' : '<span class="monthly-badge">HAVI</span>';
             let extra = '';
             if (tipus === 'aktivalt' && kupon.aktivaltDatum && kupon.aktivaltDatum.toDate) {
                 extra = `<p class="text-center"><small><i class="fas fa-calendar-check"></i> Aktiválva: ${kupon.aktivaltDatum.toDate().toLocaleDateString('hu-HU')}</small></p>`;
-            } else if (tipus === 'elerheto' && kupon.tipus === 'monthly') {
-                extra = `<p class="text-center"><small><i class="fas fa-redo"></i> Havonta használható</small></p>`;
             }
 
             const button = (tipus === 'elerheto') ? `<button class="btn btn-kupon btn-primary w-100" onclick="igenyelKupon('${kupon.id}')"><i class="fas fa-paper-plane"></i> Igényelés</button>` : '';
