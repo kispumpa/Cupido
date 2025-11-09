@@ -63,7 +63,8 @@
                                 Admin</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#"><i class="fas fa-list-alt"></i> Infó</a>
+                            <a class="nav-link" href="#" onclick="showPage('info')"><i class="fas fa-list-alt"></i>
+                                Infó</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i>
@@ -90,6 +91,81 @@
                     <i class="fas fa-check-circle"></i> Aktivált Kuponok
                 </h1>
                 <div id="aktivalt-kuponok" class="row g-4"></div>
+            </div>
+
+            <div id="info-page" style="display: none">
+                <h1 class="page-title">
+                    <i class="fas fa-info-circle"></i> Információk
+                </h1>
+
+                <!-- Szabályok -->
+
+                <div class="card kupon-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-gavel"></i> Szabályok
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-alt text-warning"></i>
+
+                            <strong>Havonta csak 1 VIP</strong> kupont használhatsz fel,
+                            illetve az <strong>összes Havi </strong>kupont.
+                        </div>
+
+                        <div>
+                            <i class="fas fa-clock text-info"></i>
+
+                            <strong>VIP </strong>kupont az
+                            <strong>adott hónap 15-ig</strong> használhatod fel, a
+                            <strong>Havit bármikor</strong>.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Információk -->
+
+                <div class="card kupon-card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-lightbulb"></i> Tudnivalók
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+
+                            A <strong>VIP kuponok egyszer használatosak</strong>.
+                        </div>
+
+                        <div class="mb-3">
+                            <i class="fas fa-redo text-success"></i>
+
+                            A <strong>Havi kuponok havonta újraaktiválódnak</strong>.
+                        </div>
+
+                        <div class="mb-3">
+                            <i class="fas fa-bell text-danger"></i>
+
+                            Ha lesznek új kuponok, arról <strong>értesítést kapsz</strong>.
+                        </div>
+
+                        <div>
+                            <i class="fas fa-sync-alt text-primary"></i>
+
+                            Igyekszem frissíteni, ha van jó ötletem.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verzió -->
+
+                <div class="card kupon-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-code-branch"></i>
+
+                        <strong>Verzió:</strong> 1.0
+                    </div>
+                </div>
             </div>
 
             <div id="admin-page" style="display: none">
@@ -632,6 +708,7 @@
             // Elrejt minden oldalt
             document.getElementById("elerheto-page").style.display = "none";
             document.getElementById("aktivalt-page").style.display = "none";
+            document.getElementById("info-page").style.display = "none";
             document.getElementById("admin-page").style.display = "none";
 
             // Összes nav-linkről leveszi az 'active' osztályt
@@ -651,6 +728,12 @@
                 loadKuponok("aktivalt");
                 document
                     .querySelector('.nav-link[onclick*="aktivalt"]')
+                    .classList.add("active");
+            } else if (page === "info") {
+                document.getElementById("info-page").style.display = "block";
+
+                document
+                    .querySelector('.nav-link[onclick*="info"]')
                     .classList.add("active");
             } else if (page === "admin") {
                 if (!isAdmin) {
