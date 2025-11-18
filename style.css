@@ -7,7 +7,7 @@
 body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .navbar {
@@ -95,6 +95,29 @@ body {
     padding: 20px;
     font-weight: bold;
     font-size: 1.2rem;
+}
+
+.opacity-50 {
+    opacity: 0.5;
+
+    filter: grayscale(60%);
+}
+
+/* Advent megnyíló üzenet */
+
+#advent .msg-box,
+[id^="msg-"] {
+    background: #ffe9f2;
+
+    border: 1px solid #ffb3ca;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    color: #c2185b;
+
+    font-weight: bold;
 }
 
 .vip-badge {
