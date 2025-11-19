@@ -128,7 +128,8 @@ async function loadAdvent() {
 
         snap.forEach((doc) => {
             const d = doc.data();
-            const isToday = d.nap === d.nap; //const isToday = d.nap === today;
+            //const isToday = d.nap === d.nap; 
+            const isToday = d.nap === today;
             const disabledClass = isToday ? "" : "opacity-50";
             const btnDisabled = isToday ? "" : "disabled";
 
