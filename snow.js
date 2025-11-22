@@ -11,7 +11,7 @@ class SnowAnimation {
         
         // Beállítások
         this.settings = {
-            count: 200,
+            count: 150,
             sizeScale: 2.5,
             speedFactor: 1.0
         };
@@ -21,12 +21,40 @@ class SnowAnimation {
     
     init() {
         this.resize();
-        window.addEventListener('resize', () => this.resize());
+        
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.resize();
+                if (this.isActive) {
+                    this.createFlakes();
+                }
+            }, 100);
+        });
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                this.resize();
+                if (this.isActive) {
+                    this.createFlakes();
+                }
+            }, 200);
+        });
         
         // Enyhe szélhatás egér mozgatáskor
         window.addEventListener('mousemove', (e) => {
             const centerX = this.canvas.width / 2;
             this.windGlobal = (e.clientX - centerX) / centerX * 0.4;
+        });
+        
+        // Touch támogatás mobilra
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                const centerX = this.width / 2;
+                this.windGlobal = (touch.clientX - centerX) / centerX * 0.4;
+            }
         });
         
         // Szél lassan visszaáll
@@ -35,8 +63,8 @@ class SnowAnimation {
     
     resize() {
         const dpr = Math.max(1, window.devicePixelRatio || 1);
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        const width = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const height = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         
         this.canvas.width = Math.floor(width * dpr);
         this.canvas.height = Math.floor(height * dpr);
