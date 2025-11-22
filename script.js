@@ -139,7 +139,7 @@ async function loadAdvent() {
 <div class="card-header text-center">${d.cim}</div>
 <div class="card-body text-center">
 <div class="icon-circle"><i class="fas ${d.icon}"></i></div>
-<button class="btn btn-primary w-100" ${btnDisabled} onclick="showAdventMessage('${doc.id}', '${d.tartalom}')">Megnyitás</button>
+<button class="btn btn-primary w-100" ${btnDisabled} onclick="showAdventMessage('${doc.id}', '${d.tartalom}')">Kinyitás</button>
 <div id="msg-${doc.id}" class="mt-2" style="display:none;"></div>
 </div>
 </div>
@@ -554,6 +554,10 @@ function showPage(page) {
     document.getElementById("admin-page").style.display = "none";
     document.getElementById("advent-page").style.display = "none";
 
+    if (window.snowAnimation) {
+        window.snowAnimation.stop();
+    }
+
     // Összes nav-linkről leveszi az 'active' osztályt
     document
         .querySelectorAll(".nav-link")
@@ -574,6 +578,9 @@ function showPage(page) {
     } else if (page == "advent" ) {
         document.getElementById("advent-page").style.display = "block";
         loadAdvent();
+        if (window.snowAnimation) {
+            window.snowAnimation.start();
+        }
     } else if (page === "aktivalt") {
         document.getElementById("aktivalt-page").style.display = "block";
         loadKuponok("aktivalt");
