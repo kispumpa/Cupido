@@ -194,20 +194,20 @@
                     <div class="card-body text-center">
                         <i class="fas fa-code-branch"></i>
 
-                        <strong>Verzió:</strong> 1.3
+                        <strong>Verzió:</strong> 1.4.260215
                     </div>
                 </div>
             </div>
 
-            <div id="admin-page" style="display: none">
+<div id="admin-page" style="display: none">
                 <h1 class="page-title"><i class="fas fa-cog"></i> Admin Panel</h1>
 
-                <!-- Kupon hozzáadás -->
                 <div class="card kupon-card mt-3">
-                    <div class="card-header">
-                        <i class="fas fa-plus-circle"></i> Új Kupon Hozzáadása
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleAdminSection('sect-uj-kupon')">
+                        <i class="fas fa-plus-circle"></i> Új Kupon hozzáadása
+                        <i id="sect-uj-kupon-icon" class="fas fa-chevron-down float-end"></i>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" id="sect-uj-kupon" style="display: none;">
                         <form id="kupon-form">
                             <div class="mb-3">
                                 <label class="form-label">Kupon Neve</label><input id="kupon-nev" class="form-control"
@@ -235,20 +235,22 @@
                     </div>
                 </div>
 
-                <!-- Kupon lista -->
                 <div class="card kupon-card mt-4">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i> Összes Kupon Kezelése
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleAdminSection('sect-kupon-lista')">
+                        <i class="fas fa-list"></i> Összes kupon kezelése
+                        <i id="sect-kupon-lista-icon" class="fas fa-chevron-down float-end"></i>
                     </div>
-                    <div class="card-body" id="admin-kuponok-lista"></div>
+                    <div class="card-body" id="sect-kupon-lista" style="display: none;">
+                        <div id="admin-kuponok-lista"></div>
+                    </div>
                 </div>
 
-                <!-- Advent Admin -->
                 <div class="card kupon-card mt-3">
-                    <div class="card-header">
-                        <i class="fas fa-gift"></i> Új Adventi Kártya
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleAdminSection('sect-uj-advent')">
+                        <i class="fas fa-gift"></i> Új Adventi kártya hozzáadása
+                        <i id="sect-uj-advent-icon" class="fas fa-chevron-down float-end"></i>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" id="sect-uj-advent" style="display: none;">
                         <form id="advent-form" onsubmit="addAdventCard(event)">
                             <div class="mb-3">
                                 <label class="form-label">Cím</label><input id="advent-cim" class="form-control"
@@ -273,20 +275,22 @@
                     </div>
                 </div>
 
-                <!-- Advent list -->
                 <div class="card kupon-card mt-3">
-                    <div class="card-header">
-                        <i class="fas fa-list"></i> Adventi kártyák
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleAdminSection('sect-advent-lista')">
+                        <i class="fas fa-list"></i> Adventi kártyák kezelése
+                        <i id="sect-advent-lista-icon" class="fas fa-chevron-down float-end"></i>
                     </div>
-                    <div class="card-body" id="admin-advent-lista"></div>
+                    <div class="card-body" id="sect-advent-lista" style="display: none;">
+                        <div id="admin-advent-lista"></div>
+                    </div>
                 </div>
 
-                <!-- Konfiguráció -->
                 <div class="card kupon-card mt-4">
-                    <div class="card-header">
+                    <div class="card-header" style="cursor: pointer;" onclick="toggleAdminSection('sect-config')">
                         <i class="fas fa-key"></i> Konfiguráció
+                        <i id="sect-config-icon" class="fas fa-chevron-down float-end"></i>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" id="sect-config" style="display: none;">
                         <h5>Firebase Konfiguráció (JSON)</h5>
                         <textarea id="firebase-config" class="form-control mb-3" rows="8"
                             placeholder='{"apiKey":"...","authDomain":"..."}'></textarea>
@@ -302,8 +306,12 @@
                             <i class="fas fa-save"></i> Mentés Firestore-ba
                         </button>
                         <h5>Advent kapcsoló</h5>
-                        <input id="advent-switch" class="form-control mb-2" placeholder="Advent" />
-                        <button class="btn btn-primary " onclick="saveAdvent()">
+                        <select id="advent-switch" class="form-select mb-2">
+                            <option value="false">Off ❌</option>
+                            <option value="true">On ✅</option>
+                        </select>
+                        
+                        <button class="btn btn-primary" onclick="saveAdvent()">
                             <i class="fas fa-save"></i> Mentés Firestore-ba
                         </button>
                     </div>
