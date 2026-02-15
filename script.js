@@ -5,14 +5,13 @@ let db,
 let configData = {};
 
 // Base minimal config (used to init Firebase so we can read Firestore config/app)
-// These values are from your project (cupido-a4cb9) - modify if needed
 const BASE_FIREBASE = {
     apiKey: "AIzaSyDhk87Q7giDXh6wKJq8D-VQGJRHSXKh1lk",
     authDomain: "cupido-a4cb9.firebaseapp.com",
     projectId: "cupido-a4cb9",
 };
 
-// Initialize Firebase (with base config) and then load real config from Firestore
+// Initialize Firebase and then load real config from Firestore
 async function initFirebase() {
     try {
         if (!firebase.apps.length) {
@@ -21,17 +20,12 @@ async function initFirebase() {
         db = firebase.firestore();
         auth = firebase.auth();
 
-        // Load config from config/app
         const cfgSnap = await db.collection("config").doc("app").get();
         if (cfgSnap.exists) {
             configData = cfgSnap.data();
             applyAdventVisibility();
             console.log("Konfig betöltve:", configData);
 
-            // If full firebase config is provided in configData, re-init app (optional)
-            // Note: firebase.initializeApp can only be called once per page. If you want to use a different config,
-            // you'd normally need to reload the page or use admin SDK on server side.
-            // We'll assume BASE_FIREBASE is enough to access the project Firestore.
             if (configData.emailjs?.publicKey) {
                 try {
                     emailjs.init(configData.emailjs.publicKey);
@@ -43,7 +37,6 @@ async function initFirebase() {
             console.warn("Nincs config/app dokumentum a Firestore-ban.");
         }
 
-        // Auth listener
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
@@ -76,7 +69,6 @@ function applyAdventVisibility() {
     }
 }
 
-
 // Show/hide screens
 function showLoginScreen() {
     document.getElementById("login-screen").style.display = "block";
@@ -105,7 +97,6 @@ async function logout() {
 }
 
 async function checkIfAdmin(email) {
-    // Determine admin by configData.adminEmail
     isAdmin = false;
     if (configData && configData.adminEmail) {
         isAdmin = email === configData.adminEmail;
@@ -124,16 +115,15 @@ async function loadAdvent() {
     try {
         const snap = await db.collection("adventi_kartyak").orderBy("nap").get();
         const today = new Date().getDate();
-        
-        // Összegyűjtjük a kártyákat
+
         let cards = "";
         let hasCards = false;
 
         snap.forEach((doc) => {
             const d = doc.data();
-            // Csak az aktív kártyák jelennek meg
+
             if (d.aktiv !== true) return;
-            
+
             hasCards = true;
             const isToday = d.nap === today;
             const disabledClass = isToday ? "" : "opacity-50";
@@ -151,12 +141,12 @@ async function loadAdvent() {
                     </div>
                 </div>`;
         });
-        
-        // Egyszerűen megjelenítjük a kártyákat, keret és lenyitó nélkül
+
         if (hasCards) {
             container.innerHTML = cards;
         } else {
-            container.innerHTML = '<div class="empty-state text-center"><i class="fas fa-inbox fa-2x"></i><div class="mt-2">Nincs aktív adventi kártya</div></div>';
+            container.innerHTML =
+                '<div class="empty-state text-center"><i class="fas fa-inbox fa-2x"></i><div class="mt-2">Nincs aktív adventi kártya</div></div>';
         }
     } catch (e) {
         container.innerHTML = `<div class="alert alert-danger">Hiba: ${e.message}</div>`;
@@ -164,17 +154,17 @@ async function loadAdvent() {
 }
 
 function toggleAdventMainCollapse() {
-    const collapseElement = document.getElementById('advent-main-collapse');
-    const icon = document.getElementById('advent-main-collapse-icon');
-    
-    if (collapseElement.style.display === 'none') {
-        collapseElement.style.display = 'block';
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
+    const collapseElement = document.getElementById("advent-main-collapse");
+    const icon = document.getElementById("advent-main-collapse-icon");
+
+    if (collapseElement.style.display === "none") {
+        collapseElement.style.display = "block";
+        icon.classList.remove("fa-chevron-down");
+        icon.classList.add("fa-chevron-up");
     } else {
-        collapseElement.style.display = 'none';
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
+        collapseElement.style.display = "none";
+        icon.classList.remove("fa-chevron-up");
+        icon.classList.add("fa-chevron-down");
     }
 }
 
@@ -195,7 +185,7 @@ async function addAdventCard(e) {
 
     await db
         .collection("adventi_kartyak")
-        .add({ cim, tartalom: tart, icon, nap, aktiv: false });  // Alapértelmezetten inaktív
+        .add({ cim, tartalom: tart, icon, nap, aktiv: false });
     alert("Adventi kártya hozzáadva!");
     document.getElementById("advent-form").reset();
     loadAdventAdmin();
@@ -209,13 +199,13 @@ async function loadAdventAdmin() {
     snap.forEach((doc) => {
         const d = doc.data();
         const aktiv = d.aktiv === true;
-        const aktivBadge = aktiv 
-            ? '<span class="badge bg-success ms-2">Aktív</span>' 
+        const aktivBadge = aktiv
+            ? '<span class="badge bg-success ms-2">Aktív</span>'
             : '<span class="badge bg-secondary ms-2">Inaktív</span>';
         const toggleBtn = aktiv
             ? `<button class="btn btn-warning btn-sm me-2" onclick="toggleAdventAktiv('${doc.id}', false)"><i class="fas fa-eye-slash"></i></button>`
             : `<button class="btn btn-success btn-sm me-2" onclick="toggleAdventAktiv('${doc.id}', true)"><i class="fas fa-eye"></i></button>`;
-            
+
         cont.innerHTML += `
 <div class="card mb-2 p-2">
     <div class="d-flex justify-content-between align-items-center">
@@ -236,7 +226,9 @@ async function toggleAdventAktiv(id, newValue) {
     try {
         await db.collection("adventi_kartyak").doc(id).update({ aktiv: newValue });
         loadAdventAdmin();
-        alert(newValue ? "Adventi kártya aktiválva!" : "Adventi kártya inaktiválva!");
+        alert(
+            newValue ? "Adventi kártya aktiválva!" : "Adventi kártya inaktiválva!",
+        );
     } catch (e) {
         alert("Hiba: " + e.message);
     }
@@ -248,7 +240,6 @@ async function deleteAdvent(id) {
     loadAdventAdmin();
 }
 
-// Load kuponok (list for 'elerheto' or 'aktivalt')
 async function loadKuponok(tipus) {
     const container = document.getElementById(`${tipus}-kuponok`);
     container.innerHTML =
@@ -298,12 +289,13 @@ async function loadKuponok(tipus) {
             }
         });
 
-        // Töröljük a tartalmat az építkezés előtt
         container.innerHTML = "";
 
-        // Ha aktivált kuponok oldalon vagyunk, adjuk hozzá az inaktív adventi kártyákat
         if (tipus === "aktivalt") {
-            const adventSnap = await db.collection("adventi_kartyak").orderBy("nap").get();
+            const adventSnap = await db
+                .collection("adventi_kartyak")
+                .orderBy("nap")
+                .get();
             const inaktivAdvent = [];
             adventSnap.forEach((doc) => {
                 const d = doc.data();
@@ -313,11 +305,8 @@ async function loadKuponok(tipus) {
             });
 
             if (inaktivAdvent.length > 0) {
-                // 1. Lépés: Generáljuk le a belső kártyák HTML-jét egy változóba
                 let adventCardsHtml = "";
                 inaktivAdvent.forEach((d) => {
-                    // Ugyanaz a stílus, mint az advent oldalon (kupon-card), de gomb nélkül
-                    // és fixen 'opacity-50' nélkül, hiszen itt már láthatóak/kinyitottak
                     adventCardsHtml += `
                         <div class="col-md-3">
                             <div class="card kupon-card">
@@ -333,7 +322,6 @@ async function loadKuponok(tipus) {
                     `;
                 });
 
-                // 2. Lépés: Egyetlen stringként fűzzük hozzá a keretet, benne a kártyákkal
                 container.innerHTML += `
                     <div class="col-12 mb-4">
                         <div class="card kupon-card">
@@ -352,11 +340,16 @@ async function loadKuponok(tipus) {
             }
         }
 
-        if (filtered.length === 0 && (tipus === "elerheto" || container.innerHTML === "")) {
+        if (
+            filtered.length === 0 &&
+            (tipus === "elerheto" || container.innerHTML === "")
+        ) {
             container.innerHTML += `<div class="empty-state text-center"><i class="fas fa-inbox fa-2x"></i><div class="mt-2">Nincs ${tipus === "elerheto" ? "elérhető" : "aktivált"
                 } kupon</div></div>`;
         } else {
-            filtered.forEach((k) => (container.innerHTML += createKuponCard(k, tipus)));
+            filtered.forEach(
+                (k) => (container.innerHTML += createKuponCard(k, tipus)),
+            );
         }
     } catch (e) {
         console.error("loadKuponok hiba", e);
@@ -368,17 +361,17 @@ async function loadKuponok(tipus) {
 }
 
 function toggleAdventCollapse() {
-    const collapseElement = document.getElementById('advent-collapse');
-    const icon = document.getElementById('advent-collapse-icon');
-    
-    if (collapseElement.style.display === 'none') {
-        collapseElement.style.display = 'block';
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
+    const collapseElement = document.getElementById("advent-collapse");
+    const icon = document.getElementById("advent-collapse-icon");
+
+    if (collapseElement.style.display === "none") {
+        collapseElement.style.display = "block";
+        icon.classList.remove("fa-chevron-down");
+        icon.classList.add("fa-chevron-up");
     } else {
-        collapseElement.style.display = 'none';
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
+        collapseElement.style.display = "none";
+        icon.classList.remove("fa-chevron-up");
+        icon.classList.add("fa-chevron-down");
     }
 }
 
@@ -420,13 +413,11 @@ function createKuponCard(kupon, tipus) {
             `;
 }
 
-// Igényel kupon -> küld email adminnak activation linkkel
 async function igenyelKupon(kuponId) {
     if (!db) {
         alert("Firebase nincs inicializálva.");
         return;
     }
-    // Ensure emailjs initialized (from configData)
     if (!configData.emailjs || !configData.emailjs.publicKey) {
         alert("EmailJS nincs konfigurálva.");
         return;
@@ -439,7 +430,6 @@ async function igenyelKupon(kuponId) {
         }
         const k = doc.data();
         const activationUrl = `${window.location.origin}${window.location.pathname}?activate=${kuponId}`;
-        // Send email using EmailJS config stored in Firestore
         const params = {
             to_email: "matulamarton1@gmail.com" || "",
             kupon_nev: k.nev || "",
@@ -449,7 +439,7 @@ async function igenyelKupon(kuponId) {
         await emailjs.send(
             configData.emailjs.service,
             configData.emailjs.template,
-            params
+            params,
         );
         alert("Igénylés elküldve az admin részére!");
     } catch (e) {
@@ -458,7 +448,6 @@ async function igenyelKupon(kuponId) {
     }
 }
 
-// URL alapján aktiválás (admin csak)
 async function checkActivation() {
     const urlParams = new URLSearchParams(window.location.search);
     const activateId = urlParams.get("activate");
@@ -485,7 +474,6 @@ async function checkActivation() {
     }
 }
 
-// Admin: hozzáadás
 document.getElementById("kupon-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!db || !isAdmin) {
@@ -566,7 +554,6 @@ async function deleteKupon(id) {
     }
 }
 
-// Admin config load/save
 async function loadAdminConfig() {
     try {
         const doc = await db.collection("config").doc("app").get();
@@ -575,7 +562,7 @@ async function loadAdminConfig() {
             document.getElementById("firebase-config").value = JSON.stringify(
                 d.firebase || {},
                 null,
-                2
+                2,
             );
             document.getElementById("emailjs-service").value =
                 d.emailjs?.service || "";
@@ -583,15 +570,12 @@ async function loadAdminConfig() {
                 d.emailjs?.template || "";
             document.getElementById("emailjs-public").value =
                 d.emailjs?.publicKey || "";
-            
-            // --- MÓDOSÍTÁS ITT ---
-            // Ha true, akkor "true" string, ha false/undefined, akkor "false" string
-            const isAdventEnabled = d.enableAdvent === true;
-            document.getElementById("advent-switch").value = isAdventEnabled ? "true" : "false";
-            // ---------------------
 
+            const isAdventEnabled = d.enableAdvent === true;
+            document.getElementById("advent-switch").value = isAdventEnabled
+                ? "true"
+                : "false";
         } else {
-            // Üres alapállapotok
             document.getElementById("firebase-config").value = "";
             document.getElementById("emailjs-service").value = "";
             document.getElementById("emailjs-template").value = "";
@@ -628,7 +612,6 @@ async function saveEmailJSConfig() {
             .collection("config")
             .doc("app")
             .set({ emailjs: { service, template, publicKey: pub } }, { merge: true });
-        // update local configData and init emailjs
         const doc = await db.collection("config").doc("app").get();
         configData = doc.data() || configData;
         if (configData.emailjs?.publicKey)
@@ -645,37 +628,32 @@ async function saveAdvent() {
     try {
         // A select értéke stringként jön ("true" vagy "false")
         const selectValue = document.getElementById("advent-switch").value;
-        
+
         // Átalakítjuk valódi boolean-ra
-        const isEnabled = (selectValue === "true");
+        const isEnabled = selectValue === "true";
 
         await db
             .collection("config")
             .doc("app")
             .set({ enableAdvent: isEnabled }, { merge: true });
 
-        // Frissítjük a helyi config változót is, hogy ne kelljen újratölteni az oldalt
         configData.enableAdvent = isEnabled;
-        applyAdventVisibility(); // Azonnal elrejti/megjeleníti a menüt
-        
+        applyAdventVisibility();
+
         alert(`Advent sikeresen ${isEnabled ? "BEKAPCSOLVA" : "KIKAPCSOLVA"}!`);
     } catch (e) {
         alert("Hiba: " + e.message);
     }
 }
 
-// On DOM ready
 window.addEventListener("DOMContentLoaded", async () => {
     await initFirebase();
-    // After init, check if URL contains activation id and if user already logged in -> activation handled in onAuthStateChanged
-    // If user is already logged in and admin, check activation now:
     setTimeout(() => {
         checkActivation();
     }, 1000);
 });
 
 function showPage(page) {
-    // Elrejt minden oldalt
     document.getElementById("elerheto-page").style.display = "none";
     document.getElementById("aktivalt-page").style.display = "none";
     document.getElementById("info-page").style.display = "none";
@@ -686,24 +664,22 @@ function showPage(page) {
         window.snowAnimation.stop();
     }
 
-    // Összes nav-linkről leveszi az 'active' osztályt
     document
         .querySelectorAll(".nav-link")
         .forEach((link) => link.classList.remove("active"));
-
 
     if (page === "advent" && configData.enableAdvent !== true) {
         alert("Az adventi naptár jelenleg kikapcsolva van.");
         return;
     }
-    // Megjeleníti a kiválasztott oldalt
+
     if (page === "elerheto") {
         document.getElementById("elerheto-page").style.display = "block";
         loadKuponok("elerheto");
         document
             .querySelector('.nav-link[onclick*="elerheto"]')
             .classList.add("active");
-    } else if (page == "advent" ) {
+    } else if (page == "advent") {
         document.getElementById("advent-page").style.display = "block";
         loadAdvent();
         if (window.snowAnimation) {
@@ -733,25 +709,23 @@ function showPage(page) {
         loadAdminConfig();
     }
 
-    // Ha mobil nézetben van lenyitva a navbar, zárja be kattintás után
     const navbarCollapse = document.querySelector(".navbar-collapse");
     if (navbarCollapse.classList.contains("show")) {
         new bootstrap.Collapse(navbarCollapse).toggle();
     }
 }
 
-// Admin panelek nyitása/csukása
 function toggleAdminSection(id) {
     const section = document.getElementById(id);
-    const icon = document.getElementById(id + '-icon');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
+    const icon = document.getElementById(id + "-icon");
+
+    if (section.style.display === "none") {
+        section.style.display = "block";
+        icon.classList.remove("fa-chevron-down");
+        icon.classList.add("fa-chevron-up");
     } else {
-        section.style.display = 'none';
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
+        section.style.display = "none";
+        icon.classList.remove("fa-chevron-up");
+        icon.classList.add("fa-chevron-down");
     }
 }

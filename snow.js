@@ -1,4 +1,3 @@
-// Hóhullás animáció kezelése
 class SnowAnimation {
     constructor() {
         this.canvas = document.getElementById('snow-canvas');
@@ -8,20 +7,19 @@ class SnowAnimation {
         this.animationFrame = null;
         this.lastTime = performance.now();
         this.windGlobal = 0;
-        
-        // Beállítások
+
         this.settings = {
             count: 150,
             sizeScale: 2.5,
             speedFactor: 1.0
         };
-        
+
         this.init();
     }
-    
+
     init() {
         this.resize();
-        
+
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
@@ -32,7 +30,7 @@ class SnowAnimation {
                 }
             }, 100);
         });
-        
+
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 this.resize();
@@ -41,14 +39,12 @@ class SnowAnimation {
                 }
             }, 200);
         });
-        
-        // Enyhe szélhatás egér mozgatáskor
+
         window.addEventListener('mousemove', (e) => {
             const centerX = this.canvas.width / 2;
             this.windGlobal = (e.clientX - centerX) / centerX * 0.4;
         });
-        
-        // Touch támogatás mobilra
+
         window.addEventListener('touchmove', (e) => {
             if (e.touches.length > 0) {
                 const touch = e.touches[0];
@@ -56,26 +52,25 @@ class SnowAnimation {
                 this.windGlobal = (touch.clientX - centerX) / centerX * 0.4;
             }
         });
-        
-        // Szél lassan visszaáll
+
         setInterval(() => { this.windGlobal *= 0.97; }, 100);
     }
-    
+
     resize() {
         const dpr = Math.max(1, window.devicePixelRatio || 1);
         const width = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const height = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-        
+
         this.canvas.width = Math.floor(width * dpr);
         this.canvas.height = Math.floor(height * dpr);
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        
+
         this.width = width;
         this.height = height;
     }
-    
+
     createFlakes() {
         this.flakes = [];
         for (let i = 0; i < this.settings.count; i++) {
@@ -87,7 +82,7 @@ class SnowAnimation {
             ));
         }
     }
-    
+
     start() {
         if (this.isActive) return;
         this.isActive = true;
@@ -96,7 +91,7 @@ class SnowAnimation {
         this.lastTime = performance.now();
         this.loop();
     }
-    
+
     stop() {
         this.isActive = false;
         this.canvas.style.display = 'none';
@@ -105,22 +100,22 @@ class SnowAnimation {
             this.animationFrame = null;
         }
     }
-    
+
     loop() {
         if (!this.isActive) return;
-        
+
         const now = performance.now();
         const dt = Math.min(0.033, (now - this.lastTime) / 1000);
         this.lastTime = now;
-        
+
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        
+
         for (const flake of this.flakes) {
             flake.update(dt, this.width, this.height, this.windGlobal);
             flake.draw(this.ctx);
         }
-        
+
         this.animationFrame = requestAnimationFrame(() => this.loop());
     }
 }
@@ -129,7 +124,7 @@ class Flake {
     constructor(w, h, scale = 1, speedFactor = 1) {
         this.reset(w, h, scale, speedFactor);
     }
-    
+
     reset(w, h, scale = 1, speedFactor = 1) {
         this.x = Math.random() * w;
         this.y = Math.random() * -h;
@@ -140,18 +135,18 @@ class Flake {
         this.spin = (Math.random() * 0.02 - 0.01);
         this.opacity = Math.random() * 0.6 + 0.4;
     }
-    
+
     update(dt, w, h, windGlobal) {
         this.tilt += this.spin * dt * 60;
         this.x += Math.sin(this.tilt) * 0.5 + (this.wind + windGlobal) * dt * 60;
         this.y += this.speed * dt * 60;
-        
+
         if (this.y - this.size > h || this.x < -50 || this.x > w + 50) {
             this.reset(w, h);
             this.y = -10 - Math.random() * 50;
         }
     }
-    
+
     draw(ctx) {
         ctx.beginPath();
         ctx.globalAlpha = this.opacity;
@@ -161,10 +156,8 @@ class Flake {
     }
 }
 
-// Globális snow objektum
 window.snowAnimation = null;
 
-// Inicializálás amikor a DOM betöltött
 window.addEventListener('DOMContentLoaded', () => {
     window.snowAnimation = new SnowAnimation();
 });

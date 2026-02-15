@@ -4,7 +4,6 @@
     --accent: #ff4081;
 }
 
-/* Hóhullás canvas */
 #snow-canvas {
     position: fixed;
     top: 0;
@@ -48,7 +47,6 @@ html {
     padding-bottom: 30px;
 }
 
-/* Login Screen */
 .login-container {
     display: flex;
     align-items: center;
@@ -129,7 +127,6 @@ html {
     filter: grayscale(60%);
 }
 
-/* Advent megnyíló üzenet */
 #advent .msg-box,
 [id^="msg-"] {
     background: #ffe9f2;
